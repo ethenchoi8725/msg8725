@@ -1,0 +1,14 @@
+{
+  "id": "./?store=pp",
+  "name": "팜팜 매출장부",
+  "short_name": "팜팜매출",
+  "start_url": "./?store=pp",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0f1419",
+  "theme_color": "#0f1419",
+  "icons": [
+    { "src": "icon-pp-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-pp-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
