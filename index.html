@@ -548,6 +548,28 @@
             body.print-ledger .lt.fit th, body.print-ledger .lt.fit td { font-size: 9px; }
             body.print-ledger .dc-box { break-inside: avoid; }
             body.print-ledger th, body.print-ledger td { font-size: 9.5px; padding: 2px 2px; }
+            /* ver.43 — 출력 글씨 키우기 · 어색한 줄바꿈 방지 */
+            body.print-main .dc-grid { gap: 8px; }
+            body.print-main .dc-box { padding: 8px 9px; }
+            body.print-main .lr { font-size: 12.5px; align-items: center; gap: 6px; }
+            body.print-main .lr span { word-break: keep-all; line-height: 1.25; }
+            body.print-main .lr span .lp { display: block; }
+            body.print-main .lr b { white-space: nowrap; }
+            body.print-main .dc-inputs { grid-template-columns: repeat(5, 1fr) !important; gap: 6px; margin-top: 8px; }
+            body.print-main .dc-inputs label { font-size: 12px !important; color: #333; gap: 2px; white-space: nowrap; border: 1px solid #ccc; border-radius: 6px; padding: 4px 7px; }
+            body.print-main .dc-inputs input { font-size: 14px !important; font-weight: bold; color: #000; text-align: right; }
+            body.print-main .p2col th, body.print-main .p2col td { font-size: 11px; padding: 4px 4px; line-height: 1.3; word-break: keep-all; }
+            body.print-main .p2col th { font-weight: bold; }
+            body.print-main #printSales th, body.print-main #printSales td { font-size: 11px; padding: 3px 2px; line-height: 1.3; word-break: keep-all; }
+            body.print-main #printSales th { white-space: nowrap; font-weight: bold; }
+            body.print-main #printSales td button, body.print-main #printSales td .pay-mark { font-size: 11px !important; }
+            body.print-main .it td, body.print-main .it th { text-align: center !important; }
+            body.print-main .it th { white-space: nowrap; }
+            body.print-main #printIncen { break-inside: avoid; }
+            body.print-main .ic .top { justify-content: center !important; }
+            body.print-main .ic input[type=checkbox]:not(:checked) { display: none; }
+            body.print-main .ic input.crs { width: 100% !important; text-align: center !important; }
+            body.print-main .ic input.cell, body.print-main .it input.cell { text-align: center !important; }
         }
 
         /* ===== 다크 모드 (화면 전용 — A4 출력은 항상 밝은 배경) ===== */
@@ -785,7 +807,7 @@ html[data-theme="dark"] [style*="#f0c36d"]{border-color:#7a4a45!important}
 <body>
     <div class="container">
         <div class="header">
-            <h1><span id="storeEmoji">💆‍♀</span> <span id="storeName">도담</span> 매출장부 <small class="ver-tag">ver.42</small></h1>
+            <h1><span id="storeEmoji">💆‍♀</span> <span id="storeName">도담</span> 매출장부 <small class="ver-tag">ver.43</small></h1>
             <script>document.getElementById('storeName').textContent = STORE.name; if (STORE.id === 'pp') document.getElementById('storeEmoji').textContent = '💆‍♂️';</script>
             <div class="header-btns">
                 <button class="btn-refresh m-sec" onclick="location.reload()" style="width: auto;"><span class="hb-ic">🔄 </span>새로고침</button>
@@ -4146,8 +4168,8 @@ html[data-theme="dark"] [style*="#f0c36d"]{border-color:#7a4a45!important}
             }
             document.getElementById('dcSales').innerHTML = SALES_F.filter(f => f !== '기타' || a.기타).map(f => L(f, a[f])).join('') + L('합계', total, 'tot') + thaiLine;
             document.getElementById('dcExpense').innerHTML = L('현금' + (a.알바 ? ' (알바비 ' + W(a.알바) + ' 포함)' : ''), a.현금지출) + L('계좌', a.계좌지출) + L('개인지출', a.개인지출) + (STORE.id === 'pp' ? L('한국인센', a.한국인센) + L('태국인센', a.태국인센) : L('인센', inc)) + L('합계', a.현금지출 + a.계좌지출 + a.개인지출 + inc, 'tot');
-            document.getElementById('dcCash').innerHTML = L('당일시재', a.시재) + L('현금매출', a.현금) + (a.봉투출금 ? L('봉투→시재', a.봉투출금) : '') + L('현금지출(+인센' + (a.알바 ? '·알바' : '') + ')', -(a.현금지출 + inc)) + L('시재→봉투', -a.봉투입금) + (a.지명비계좌 ? L('(참고) 지명비 계좌수령', a.지명비계좌) : '') + L('당일잔고', cashBalance(a), 'tot');
-            document.getElementById('dcAcctBox').innerHTML = L('전일 계좌잔고', a.당일계좌) + L('계좌매출' + (a.지명비계좌 ? ' (지명비 포함)' : ''), a.계좌 + a.지명비계좌) + ((a.카드입금 + a.어플입금) ? L('카드·어플 입금', a.카드입금 + a.어플입금) : '') + (a.계좌입금 ? L('계좌입금', a.계좌입금) : '') + (a.계좌수금 ? L('계좌수금(출금)', -a.계좌수금) : '') + L('계좌지출', -a.계좌지출) + L('당일 잔고', acctBalance(a), 'tot');
+            document.getElementById('dcCash').innerHTML = L('당일시재', a.시재) + L('현금매출', a.현금) + (a.봉투출금 ? L('봉투→시재', a.봉투출금) : '') + L('현금지출<span class="lp">(+인센' + (a.알바 ? '·알바' : '') + ')</span>', -(a.현금지출 + inc)) + L('시재→봉투', -a.봉투입금) + (a.지명비계좌 ? L('(참고) 지명비 계좌수령', a.지명비계좌) : '') + L('당일잔고', cashBalance(a), 'tot');
+            document.getElementById('dcAcctBox').innerHTML = L('전일 계좌잔고', a.당일계좌) + L('계좌매출' + (a.지명비계좌 ? '<span class="lp">(지명비 포함)</span>' : ''), a.계좌 + a.지명비계좌) + ((a.카드입금 + a.어플입금) ? L('카드·어플 입금', a.카드입금 + a.어플입금) : '') + (a.계좌입금 ? L('계좌입금', a.계좌입금) : '') + (a.계좌수금 ? L('계좌수금<span class="lp">(출금)</span>', -a.계좌수금) : '') + L('계좌지출', -a.계좌지출) + L('당일 잔고', acctBalance(a), 'tot');
             if (dcShownDate !== date) {
                 const set = (id, v) => document.getElementById(id).value = v ? v.toLocaleString() : '';
                 set('dcStartCash', a.시재); set('dcStartAcct', a.당일계좌); set('dcAcct', a.계좌수금); set('dcEnv', a.봉투입금); set('dcEnvOut', a.봉투출금);
