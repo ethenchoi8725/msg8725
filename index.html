@@ -233,6 +233,14 @@
         .rv-no{font-size:15px}
         .rv-eta{color:#fff !important;background:linear-gradient(transparent 8%, #e53935 8%, #e53935 94%, transparent 94%);padding:0 8px;border-radius:3px}
         .rv-tag{padding:1px 8px;border-radius:10px;background:#ebedef;font-size:12px}
+        .rv-tag.rv-as{background:#d6eaf8;color:#1b4f72;font-weight:bold}
+        .rv-tag.rv-as-nom{background:#fadbd8;color:#922b21}
+        .rv-tag.rv-as-wait{background:#fdebd0;color:#9c640c}
+        .rv-tag.rv-as-no{background:#e5e8e8;color:#555}
+        html[data-theme="dark"] .rv-tag.rv-as{background:#1b3a57;color:#aed6f1}
+        html[data-theme="dark"] .rv-tag.rv-as-nom{background:#5b2320;color:#f5b7b1}
+        html[data-theme="dark"] .rv-tag.rv-as-wait{background:#5a4012;color:#f8c471}
+        html[data-theme="dark"] .rv-tag.rv-as-no{background:#333;color:#bbb}
         .rv-late-t{color:#e74c3c;font-weight:bold}
         .rv-wait-t{color:#b9770e;font-weight:bold}
         .rv-btns{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
@@ -827,7 +835,7 @@ html[data-theme="dark"] [style*="#f0c36d"]{border-color:#7a4a45!important}
 <body>
     <div class="container">
         <div class="header">
-            <h1><span id="storeEmoji">💆‍♀</span> <span id="storeName">도담</span> 매출장부 <small class="ver-tag">ver.49</small></h1>
+            <h1><span id="storeEmoji">💆‍♀</span> <span id="storeName">도담</span> 매출장부 <small class="ver-tag">ver.53</small></h1>
             <script>document.getElementById('storeName').textContent = STORE.name; if (STORE.id === 'pp') document.getElementById('storeEmoji').textContent = '💆‍♂️';</script>
             <div class="header-btns">
                 <button class="btn-refresh m-sec" onclick="location.reload()" style="width: auto;"><span class="hb-ic">🔄 </span>새로고침</button>
@@ -878,7 +886,7 @@ html[data-theme="dark"] [style*="#f0c36d"]{border-color:#7a4a45!important}
                     <select id="rvRecv" class="c-recv" title="예약 전화가 온 시각"></select>
                     <select id="rvEta" class="c-eta" title="아래 버튼으로만 변경됩니다" disabled style="pointer-events:none;opacity:1"></select>
                 </div>
-                <div class="rv-quick"><span class="rv-quick-l">도착예정</span><button type="button" onclick="rvEtaIn(0)">바로</button><button type="button" onclick="rvEtaIn(5)">+5분 후</button><button type="button" onclick="rvEtaIn(10)">+10분 후</button><button type="button" onclick="rvEtaIn(20)">+20분 후</button><button type="button" onclick="rvEtaIn(30)">+30분 후</button><button type="button" onclick="rvEtaIn(40)">+40분 후</button><button type="button" onclick="rvEtaIn(50)">+50분 후</button><select id="rvEtaMore" title="60분 이상" onchange="if(this.value){rvEtaIn(+this.value);this.value=''}"><option value="">60분 이상 ▾</option><option value="60">+60분 후</option><option value="70">+70분 후</option><option value="80">+80분 후</option><option value="90">+90분 후</option><option value="100">+100분 후</option><option value="110">+110분 후</option><option value="120">+120분 후</option><option value="130">+130분 후</option><option value="140">+140분 후</option><option value="150">+150분 후</option><option value="160">+160분 후</option><option value="170">+170분 후</option><option value="180">+180분 후</option></select></div>
+                <div class="rv-quick"><span class="rv-quick-l">도착예정</span><button type="button" onclick="rvEtaIn(0)">바로</button><button type="button" onclick="rvEtaIn(5)">+5분 후</button><button type="button" onclick="rvEtaIn(10)">+10분 후</button><button type="button" onclick="rvEtaIn(15)">+15분 후</button><button type="button" onclick="rvEtaIn(20)">+20분 후</button><button type="button" onclick="rvEtaIn(30)">+30분 후</button><button type="button" onclick="rvEtaIn(40)">+40분 후</button><select id="rvEtaMore" title="40분 이상" onchange="if(this.value){rvEtaIn(+this.value);this.value=''}"><option value="">40분 이상 ▾</option><option value="40">+40분 후</option><option value="50">+50분 후</option><option value="60">+60분 후</option><option value="70">+70분 후</option><option value="80">+80분 후</option><option value="90">+90분 후</option><option value="100">+100분 후</option></select></div>
                 <div class="rv-step"><span class="rv-quick-l">도착예정</span><button type="button" onclick="rvEtaIn(0)">바로</button><button type="button" onclick="rvEtaStep(-10)">− 10분</button><button type="button" onclick="rvEtaStep(10)">+ 10분</button><button type="button" onclick="rvEtaStep(5)">연장 +5분</button></div>
                 <div class="grid-form grid-row-4">
                     <select id="rvCourse" onchange="rvPriceUpdate()"></select>
@@ -887,8 +895,9 @@ html[data-theme="dark"] [style*="#f0c36d"]{border-color:#7a4a45!important}
                     <select id="rvPay" onchange="rvPriceUpdate()"></select>
                 </div>
                 <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-                    <input type="text" id="rvNote" placeholder="추가 요청사항" style="flex:1;min-width:160px">
+                    <input type="text" id="rvNote" placeholder="추가 요청사항" style="flex:1;min-width:120px">
                     <span id="rvPrice" class="rv-price"></span>
+                    <select id="rvNom" title="지명 관리사" style="width:140px;padding:10px 6px"><option value="">지명 관리사 없음</option></select>
                     <button type="submit" id="rvSubmit" class="btn-submit-sales" style="width:140px;padding:10px 0">예약 등록</button>
                     <button type="button" id="rvMissBtn" class="rv-btn-miss" onclick="missQuick()" style="width:140px;padding:10px 0">🙅 못받음 바로 기록</button>
                     <button type="button" id="rvCancel" onclick="resetResForm()" class="btn-refresh" style="display:none;width:auto">취소</button>
@@ -2275,6 +2284,10 @@ html[data-theme="dark"] [style*="#f0c36d"]{border-color:#7a4a45!important}
             set('rvCourse', '<option value="">코스 선택</option>' + courses.map(c => `<option>${esc(c)}</option>`).join(''));
             set('rvWho', '<option value="">인원</option>' + Object.keys(WHO_L).map(k => `<option value="${k}">${WHO_L[k]}</option>`).join(''));
             ['rvRecv', 'rvEta'].forEach(id => { const el = document.getElementById(id); if (!el.options.length) el.innerHTML = generateTimeOptionsHTML(id === 'rvRecv' ? '예약시간' : '도착예정'); });
+            { const el = document.getElementById('rvNom'), cur = el.value;
+              el.innerHTML = '<option value="">지명 관리사 없음</option>' + therapists.map(t => `<option value="${esc(t)}">지명 ${esc(t)}</option>`).join('');
+              if (cur && !therapists.includes(cur)) el.insertAdjacentHTML('beforeend', `<option value="${esc(cur)}">지명 ${esc(cur)}</option>`);
+              el.value = cur; }
             rvPayOptions();
             const rc = document.getElementById('rvRecv'); if (!rc.value && !document.getElementById('rvEditId').value) setRvTime('rvRecv', hmOf(Math.round(nowMin() / 5) * 5));
         }
@@ -2318,7 +2331,7 @@ html[data-theme="dark"] [style*="#f0c36d"]{border-color:#7a4a45!important}
             const editId = g('rvEditId'), old = editId ? reservations.find(x => x.id === Number(editId)) : null;
             const rec = { id: old ? old.id : Date.now(), date: old ? old.date : date, no: old ? old.no : Math.max(0, ...reservations.filter(x => x.date === date).map(x => x.no || 0)) + 1,
                 recv: g('rvRecv'), cust: g('rvCust'), route, phone: g('rvPhone').trim(), eta: g('rvEta'), course: g('rvCourse'), who: g('rvWho'), people: whoCount(g('rvWho')),
-                payPlan: g('rvPlan'), payMethod: g('rvPay'), note: g('rvNote').trim(), status: old ? old.status : 'wait', saleIds: old ? old.saleIds : [] };
+                payPlan: g('rvPlan'), payMethod: g('rvPay'), note: g('rvNote').trim(), nom: g('rvNom'), status: old ? old.status : 'wait', saleIds: old ? old.saleIds : [] };
             if (old) reservations[reservations.indexOf(old)] = rec; else reservations.push(rec);
             syncToFirebase(); resetResForm(); renderReservations();
         });
@@ -2330,6 +2343,7 @@ html[data-theme="dark"] [style*="#f0c36d"]{border-color:#7a4a45!important}
             document.getElementById('rvCust').value = r.cust || '';
             document.getElementById('rvPhone').value = r.phone || '';
             setRvTime('rvRecv', r.recv); setRvTime('rvEta', r.eta);
+            { const el = document.getElementById('rvNom'); if (r.nom && ![...el.options].some(o => o.value === r.nom)) el.insertAdjacentHTML('beforeend', `<option value="${esc(r.nom)}">지명 ${esc(r.nom)}</option>`); el.value = r.nom || ''; }
             document.getElementById('rvCourse').value = r.course; document.getElementById('rvWho').value = r.who;
             document.getElementById('rvPlan').value = r.payPlan || ''; rvPayOptions(); document.getElementById('rvPay').value = r.payMethod || '';
             document.getElementById('rvNote').value = r.note || '';
@@ -2365,6 +2379,7 @@ html[data-theme="dark"] [style*="#f0c36d"]{border-color:#7a4a45!important}
             document.getElementById('course').value = r.course;
             if (r.payMethod) document.getElementById('payMethod').value = r.payMethod;
             document.getElementById('note').value = r.note || '';
+            if (r.nom && !(r.saleIds || []).length) { document.getElementById('therapist').value = r.nom; const nb = document.getElementById('nominated'); if (nb && !nb.checked) { nb.checked = true; if (window.onNomChange) onNomChange(); } }
             const st = hmOf(Math.round(nowMin() / 5) * 5); ensureTimeOpt(document.getElementById('startTime'), st); document.getElementById('startTime').value = st;
             priceAuto = true; document.getElementById('price').value = ''; onCourseChange();
             const remain = (r.people || 1) - (r.saleIds || []).length;
@@ -2448,6 +2463,41 @@ html[data-theme="dark"] [style*="#f0c36d"]{border-color:#7a4a45!important}
             const d = new Date(t);
             return wait <= 0 ? { ok: true, msg: '도착 시 바로 가능' } : { wait, msg: `약 ${wait}분 대기 예상 (${fmtT(hmOf(d.getHours() * 60 + d.getMinutes()))} 가능)` };
         }
+        // ver.51 대기 예약에 관리사 배정 (관리사 순번 · 관리중 종료시간 · 지명 기준)
+        function resMinutes(c) {
+            let m = courseMinutes(c);
+            if (!m) { try { m = partsOf(c).reduce((t, p) => t + courseMinutes(p.name), 0); } catch (e) { m = 0; } }
+            return m || 60;
+        }
+        function planAssign(day, staff) {
+            const nowT = Date.now(), out = {};
+            const pool = staff.filter(x => x.att).map(x => ({ name: x.name, free: x.free }));
+            const waits = day.filter(r => r.status === 'wait').sort((a, b) => (tk(a.eta) - tk(b.eta)) || a.no - b.no);
+            const arr = r => { const e = r.eta ? careDT(r.date, r.eta) : null; return Math.max(nowT, e ? e.getTime() : nowT); };
+            const take = (r, p, nom) => {
+                const a = arr(r); if (p.free === Infinity) return { name: p.name, nom, unknown: true };
+                const start = Math.max(a, p.free); p.free = start + resMinutes(r.course) * 60000;
+                return { name: p.name, nom, wait: Math.max(0, Math.round((start - a) / 60000)) };
+            };
+            waits.filter(r => r.nom).forEach(r => {   // 1) 지명 예약 먼저
+                const p = pool.find(x => x.name === r.nom);
+                out[r.id] = [p ? take(r, p, true) : { name: r.nom, nom: true, off: true }];
+            });
+            waits.forEach(r => {   // 2) 나머지 인원은 관리사 순번대로
+                const got = out[r.id] || (out[r.id] = []);
+                let need = (r.people || 1) - got.length;
+                while (need-- > 0) {
+                    const used = got.map(x => x.name), a = arr(r);
+                    const cand = pool.filter(x => !used.includes(x.name));
+                    if (!cand.length) { got.push({ none: true }); continue; }
+                    const p = cand.find(x => x.free <= a) || cand.filter(x => x.free !== Infinity).sort((x, y) => x.free - y.free)[0] || cand[0];
+                    got.push(take(r, p, false));
+                }
+            });
+            return out;
+        }
+        const assignTag = x => x.none ? '<span class="rv-tag rv-as rv-as-no">가능 관리사 없음</span>'
+            : `<span class="rv-tag rv-as${x.nom ? ' rv-as-nom' : ''}${x.wait > 0 || x.off || x.unknown ? ' rv-as-wait' : ''}">${x.nom ? '지명 ' : ''}${x.off ? esc(x.name) + ' (미출근)' : x.unknown ? esc(x.name) + ' (종료시간 미입력)' : (x.wait > 0 ? x.wait + '분 후 가능 ' : '') + esc(x.name)}</span>`;
         function renderReservations() {
             const listEl = document.getElementById('resList'); if (!listEl) return;
             const date = document.getElementById('date').value, isToday = date === getBusinessDate();
@@ -2466,19 +2516,24 @@ html[data-theme="dark"] [style*="#f0c36d"]{border-color:#7a4a45!important}
                 bar.innerHTML = `<b>관리사</b> ` + staff.map(x => `<span class="rv-chip ${!x.att ? 'off' : x.busy ? 'busy' : 'ok'}" data-nm="${esc(x.name)}" onclick="toggleAtt('${esc(x.name).replace(/'/g, "\\'")}')" title="누르면 출근/미출근 전환 · 끌어서 순번 변경">${esc(x.name)}${therapistAlba[x.name] ? '<span class="alba-tag">알바</span>' : ''} ${!x.att ? '미출근' : x.busy ? (x.unknown ? '관리중' : '관리중 ~' + fmtT(x.endHM)) : '가능'}</span>`).join('')
                     + ` <span style="margin-left:6px"><b>지금 가능 ${freeN}명</b>${freeN === 0 && nx ? ` · 다음 가능 ${fmtT(hmOf(nx.getHours() * 60 + nx.getMinutes()))} (${mn}분 후)` : ''}</span>`;
             }
+            const plan = isToday ? planAssign(day, staff) : {};
             const order = { wait: 0, done: 1, cancel: 2, noshow: 2, black: 2, miss: 2 };
             const sorted = [...day].sort((a, b) => (order[a.status] - order[b.status]) || (a.status === 'wait' ? (tk(a.eta) - tk(b.eta)) : 0) || a.no - b.no);
             const isFin = r => r.status === 'done' && (r.saleIds || []).length >= (r.people || 1);   // 매출 연동 완료 → 완료 목록으로
             const card = r => {
                 const wait = r.status === 'wait', canReg = wait || (r.status === 'done' && (r.saleIds || []).length < (r.people || 1)), eta = r.eta ? careDT(r.date, r.eta) : null;
                 const late = wait && isToday && eta ? Math.floor((Date.now() - eta.getTime()) / 60000) : 0;
-                const est = wait && isToday ? estWait(r, staff) : null;
+                let est = wait && isToday ? estWait(r, staff) : null;
+                if (est && plan[r.id] && plan[r.id].length && !plan[r.id].some(x => x.none || x.off || x.unknown)) {   // 앞 예약 배정까지 반영한 대기시간
+                    const w = Math.max(...plan[r.id].map(x => x.wait || 0));
+                    est = w <= 0 ? { ok: true, msg: '도착 시 바로 가능' } : { wait: w, msg: `약 ${w}분 대기 예상` };
+                }
                 const price = priceFor(r.course, r.route, r.payMethod);
                 const links = (r.saleIds || []).map(id => seq[id]).filter(Boolean);
                 const btn = (label, fn, bg) => `<button type="button" onclick="${fn}"${bg ? ` style="background:${bg}"` : ''}>${label}</button>`;
                 return `<div class="rv-card rv-${r.status === 'noshow' ? 'noshow' : r.status}${late > 0 ? ' rv-late' : ''}">
                     <div class="rv-top"><b class="rv-no">#${r.no}</b><span class="rv-tag">${esc(r.route)}</span>${r.cust ? `<span class="rv-tag">${r.cust}</span>` : ''}<span>예약시간 ${fmtT(r.recv) || '-'}</span><b class="rv-eta">도착예정 ${r.eta ? fmtT(r.eta) : '미정'}</b>
-                    ${late > 0 ? `<span class="rv-late-t">⏰ ${late}분 지남</span>` : ''}<span class="rv-tag">${RV_NAME[r.status]}${r.status === 'miss' && r.missReason ? ' · ' + esc(r.missReason) : ''}${links.length ? ' · 매출 ' + links.map(n => n + '번').join(', ') : ''}</span></div>
+                    ${late > 0 ? `<span class="rv-late-t">⏰ ${late}분 지남</span>` : ''}<span class="rv-tag">${RV_NAME[r.status]}${r.status === 'miss' && r.missReason ? ' · ' + esc(r.missReason) : ''}${links.length ? ' · 매출 ' + links.map(n => n + '번').join(', ') : ''}</span>${wait && plan[r.id] ? plan[r.id].map(assignTag).join('') : (wait && r.nom ? assignTag({ name: r.nom, nom: true }) : '')}</div>
                     <div>${r.phone ? '📞 ' + esc(r.phone) + ' · ' : ''}${esc(r.course)} · ${WHO_L[r.who] || ''} · ${r.payPlan === '선결제' ? '어플 선결제' : '현장결제'}${r.payMethod ? '(' + esc(r.payMethod) + ')' : ''}${price ? ' · 예상 ' + W(price) + '원' : ''}</div>
                     ${r.note ? `<div>📝 ${esc(r.note)}</div>` : ''}
                     ${est ? `<div class="${est.ok ? '' : 'rv-wait-t'}">${est.ok ? '✅ ' : '⏳ '}${est.msg}</div>` : ''}
