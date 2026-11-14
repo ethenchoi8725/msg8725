@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
+    <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&display=swap">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#0f1419">
@@ -60,7 +62,7 @@
             --form-bg: #f0f4f9;
             --list-bg: #ffffff;
         }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-color); margin: 0; padding: 20px; color: #333; }
+        body { font-family: 'Nanum Gothic', '나눔고딕', 'Segoe UI', 'Malgun Gothic', sans-serif; background-color: var(--bg-color); margin: 0; padding: 20px; color: #333; }
         .container { max-width: 1500px; margin: 0 auto; }
         @media screen and (min-width:769px){
             #salesTableContainer th, #salesTableContainer td { padding: 8px 4px; white-space: nowrap; }
@@ -100,6 +102,7 @@
         .incen-row input { flex: 1; }
         .incen-btn-group { display: flex; gap: 10px; margin-top: 10px; align-items: center; }
         
+        input, select, button, textarea { font-family: inherit; }
         input, select, button { padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; background-color: #ffffff; box-sizing: border-box; width: 100%; }
         button { background-color: var(--primary-color); color: white; border: none; cursor: pointer; font-weight: bold; }
         button:hover { background-color: #357abd; }
@@ -163,6 +166,8 @@
         .section-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 10px; }
         .section-title-group { display: flex; align-items: center; gap: 8px; }
         .sales-summary-badges { display: flex; gap: 8px; flex-wrap: wrap; font-size: 13px; }
+        .bx i, .tx i, .tx em { font-style: normal; } .tx .ta, .tx .tn { margin-left: 4px; }
+        .bx i { font-style: normal; } .bx .bl b { font-weight: inherit; } .bx .ba, .bx .bn { margin-left: 4px; }
         .badge { background: #eef2f7; padding: 6px 12px; border-radius: 6px; font-weight: bold; color: #2c3e50; border: 1px solid #dcdfe6; font-size: 13px; }
         .badge-total { background: #4a90e2; color: white; border: none; font-size: 13px; }
         .badge-incen-total { background: #c0392b; color: white; border: none; }
@@ -562,6 +567,21 @@
             body.print-main .p2col th { font-weight: bold; }
             body.print-main #printSales th, body.print-main #printSales td { font-size: 11px; padding: 3px 2px; line-height: 1.3; word-break: keep-all; }
             body.print-main #printSales th { white-space: nowrap; font-weight: bold; }
+            body.print-main #printSales td { border-bottom: 1px solid #8a8a8a !important; }
+            body.print-main #printSales th { border-bottom: 1.5px solid #555 !important; }
+            body.print-main #printSales .section-header { flex-direction: column; align-items: stretch; }
+            body.print-main #salesBadgesContainer { display: grid !important; grid-template-columns: auto repeat(var(--bc, 3), minmax(0, 1fr)); grid-auto-flow: row; gap: 6px; width: 100%; }
+            body.print-main #salesBadgesContainer .badge { display: flex; align-items: center; justify-content: center; text-align: center; white-space: nowrap; margin: 0; min-width: 0; font-size: 12.5px; padding: 5px 4px; }
+            body.print-main #salesBadgesContainer .badge-total { grid-row: span 2; padding: 6px 18px; }
+            body.print-main #salesBadgesContainer .tx { display: grid; grid-template-columns: auto auto; grid-template-rows: 1fr 1fr; column-gap: 22px; align-items: center; justify-content: center; }
+            body.print-main #salesBadgesContainer .tx .scr { display: none; }
+            body.print-main #salesBadgesContainer .tx .tl { grid-row: span 2; font-size: 22px; letter-spacing: 1px; }
+            body.print-main #salesBadgesContainer .tx .ta, body.print-main #salesBadgesContainer .tx .tn { margin-left: 0; text-align: right; font-size: 17px; line-height: 1.2; white-space: nowrap; }
+            body.print-main #salesBadgesContainer .bx { display: grid; grid-template-columns: 3.7em auto 1fr auto; gap: 0 4px; padding: 5px 8px; font-size: 12px; }
+            body.print-main #salesBadgesContainer .bx i { white-space: nowrap; }
+            body.print-main #salesBadgesContainer .bx .bl { display: flex; justify-content: space-between; }
+            body.print-main #salesBadgesContainer .bx .ba { text-align: right; margin-left: 0; }
+            body.print-main #salesBadgesContainer .bx .bn { text-align: right; margin-left: 0; }
             body.print-main #printSales td button, body.print-main #printSales td .pay-mark { font-size: 11px !important; }
             body.print-main .it td, body.print-main .it th { text-align: center !important; }
             body.print-main .it th { white-space: nowrap; }
@@ -807,7 +827,7 @@ html[data-theme="dark"] [style*="#f0c36d"]{border-color:#7a4a45!important}
 <body>
     <div class="container">
         <div class="header">
-            <h1><span id="storeEmoji">💆‍♀</span> <span id="storeName">도담</span> 매출장부 <small class="ver-tag">ver.44</small></h1>
+            <h1><span id="storeEmoji">💆‍♀</span> <span id="storeName">도담</span> 매출장부 <small class="ver-tag">ver.49</small></h1>
             <script>document.getElementById('storeName').textContent = STORE.name; if (STORE.id === 'pp') document.getElementById('storeEmoji').textContent = '💆‍♂️';</script>
             <div class="header-btns">
                 <button class="btn-refresh m-sec" onclick="location.reload()" style="width: auto;"><span class="hb-ic">🔄 </span>새로고침</button>
@@ -3300,10 +3320,10 @@ html[data-theme="dark"] [style*="#f0c36d"]{border-color:#7a4a45!important}
             const catSum = {}, catCnt = {}; let saleCnt = 0, nomAdd = 0;
             salesData.filter(i => i.date === selectedDate && isSale(i)).forEach(i => { const c = payCat(i.payMethod); catSum[c] = (catSum[c] || 0) + i.price; catCnt[c] = (catCnt[c] || 0) + 1; if (pay2Of(i)) { const c2 = payCat(i.pay2.method); catSum[c2] = (catSum[c2] || 0) + Number(i.pay2.amount); catCnt[c2] = (catCnt[c2] || 0) + 1; } if (sleepOf(i)) { const c3 = payCat(i.sleep.method); catSum[c3] = (catSum[c3] || 0) + Number(i.sleep.amount); } if (tipSum(i)) catSum['카드'] = (catSum['카드'] || 0) + tipSum(i); saleCnt++; if (i.nominated && incenSettings.nomInSales) { const ns = nomSplit(i); catSum['현금'] = (catSum['현금'] || 0) + ns.cash; catSum['계좌'] = (catSum['계좌'] || 0) + ns.acct; catSum['카드'] = (catSum['카드'] || 0) + ns.card; nomAdd += ns.cash + ns.acct + ns.card; } });
             const ORDER = ['현금', '계좌', '카드', '바로결제', '하이패스'];
-            let salesBadgesHTML = `<span class="badge badge-total">총매출: ${(dayTotal + nomAdd).toLocaleString()}원 / ${saleCnt} 건</span>`;
-            [...ORDER, ...(catSum['기타'] ? ['기타'] : [])].forEach(c => { salesBadgesHTML += `<span class="badge">${c}: ${(catSum[c] || 0).toLocaleString()}원 / ${catCnt[c] || 0} 건</span>`; });
+            let salesBadgesHTML = `<span class="badge badge-total tx"><i class="tl">총매출<em class="scr">:</em></i><i class="ta">${(dayTotal + nomAdd).toLocaleString()}원</i><i class="tn"><em class="scr">/ </em>${saleCnt}<em class="scr"> </em>건</i></span>`;
+            [...ORDER, ...(catSum['기타'] ? ['기타'] : [])].forEach(c => { salesBadgesHTML += `<span class="badge bx"><i class="bl">${Array.from(c).map(ch => `<b>${ch}</b>`).join('')}</i><i class="bc">:</i><i class="ba">${(catSum[c] || 0).toLocaleString()}원</i><i class="bn">/ ${catCnt[c] || 0} 건</i></span>`; });
             { const dd = salesData.filter(i => i.date === selectedDate && isSale(i)), nr = dd.filter(i => i.resId).length, nw = dd.filter(i => i.walkin).length; if (nr + nw) salesBadgesHTML += `<span class="badge">예약 ${nr}건 · 워크인 ${nw}건</span>`; }
-            document.getElementById('salesBadgesContainer').innerHTML = salesBadgesHTML;
+            { const bc = document.getElementById('salesBadgesContainer'); bc.innerHTML = salesBadgesHTML; bc.style.setProperty('--bc', Math.max(1, Math.ceil((bc.children.length - 1) / 2))); }
 
             let expenseBadgesHTML = `<span class="badge badge-expense-total">지출항목 합계: ${dayExpenseTotal.toLocaleString()}원</span>`;
             for (const [cat, amount] of Object.entries(expenseCategorySummary)) {
