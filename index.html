@@ -785,7 +785,7 @@ html[data-theme="dark"] [style*="#f0c36d"]{border-color:#7a4a45!important}
 <body>
     <div class="container">
         <div class="header">
-            <h1><span id="storeEmoji">💆‍♀</span> <span id="storeName">도담</span> 매출장부 <small class="ver-tag">ver.41</small></h1>
+            <h1><span id="storeEmoji">💆‍♀</span> <span id="storeName">도담</span> 매출장부 <small class="ver-tag">ver.42</small></h1>
             <script>document.getElementById('storeName').textContent = STORE.name; if (STORE.id === 'pp') document.getElementById('storeEmoji').textContent = '💆‍♂️';</script>
             <div class="header-btns">
                 <button class="btn-refresh m-sec" onclick="location.reload()" style="width: auto;"><span class="hb-ic">🔄 </span>새로고침</button>
@@ -4145,7 +4145,7 @@ html[data-theme="dark"] [style*="#f0c36d"]{border-color:#7a4a45!important}
                 thaiLine = (kor ? L('(한국 매출)', kor) : '') + L('태국 매출', total - kor, 'tot');
             }
             document.getElementById('dcSales').innerHTML = SALES_F.filter(f => f !== '기타' || a.기타).map(f => L(f, a[f])).join('') + L('합계', total, 'tot') + thaiLine;
-            document.getElementById('dcExpense').innerHTML = L('현금' + (a.알바 ? ' (알바비 ' + W(a.알바) + ' 포함)' : ''), a.현금지출) + L('계좌', a.계좌지출) + L('개인지출', a.개인지출) + L('인센', inc) + L('합계', a.현금지출 + a.계좌지출 + a.개인지출 + inc, 'tot');
+            document.getElementById('dcExpense').innerHTML = L('현금' + (a.알바 ? ' (알바비 ' + W(a.알바) + ' 포함)' : ''), a.현금지출) + L('계좌', a.계좌지출) + L('개인지출', a.개인지출) + (STORE.id === 'pp' ? L('한국인센', a.한국인센) + L('태국인센', a.태국인센) : L('인센', inc)) + L('합계', a.현금지출 + a.계좌지출 + a.개인지출 + inc, 'tot');
             document.getElementById('dcCash').innerHTML = L('당일시재', a.시재) + L('현금매출', a.현금) + (a.봉투출금 ? L('봉투→시재', a.봉투출금) : '') + L('현금지출(+인센' + (a.알바 ? '·알바' : '') + ')', -(a.현금지출 + inc)) + L('시재→봉투', -a.봉투입금) + (a.지명비계좌 ? L('(참고) 지명비 계좌수령', a.지명비계좌) : '') + L('당일잔고', cashBalance(a), 'tot');
             document.getElementById('dcAcctBox').innerHTML = L('전일 계좌잔고', a.당일계좌) + L('계좌매출' + (a.지명비계좌 ? ' (지명비 포함)' : ''), a.계좌 + a.지명비계좌) + ((a.카드입금 + a.어플입금) ? L('카드·어플 입금', a.카드입금 + a.어플입금) : '') + (a.계좌입금 ? L('계좌입금', a.계좌입금) : '') + (a.계좌수금 ? L('계좌수금(출금)', -a.계좌수금) : '') + L('계좌지출', -a.계좌지출) + L('당일 잔고', acctBalance(a), 'tot');
             if (dcShownDate !== date) {
