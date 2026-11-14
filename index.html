@@ -835,7 +835,7 @@ html[data-theme="dark"] [style*="#f0c36d"]{border-color:#7a4a45!important}
 <body>
     <div class="container">
         <div class="header">
-            <h1><span id="storeEmoji">💆‍♀</span> <span id="storeName">도담</span> 매출장부 <small class="ver-tag">ver.58</small></h1>
+            <h1><span id="storeEmoji">💆‍♀</span> <span id="storeName">도담</span> 매출장부 <small class="ver-tag">ver.59</small></h1>
             <script>document.getElementById('storeName').textContent = STORE.name; if (STORE.id === 'pp') document.getElementById('storeEmoji').textContent = '💆‍♂️';</script>
             <div class="header-btns">
                 <button class="btn-refresh m-sec" onclick="location.reload()" style="width: auto;"><span class="hb-ic">🔄 </span>새로고침</button>
@@ -2473,6 +2473,9 @@ html[data-theme="dark"] [style*="#f0c36d"]{border-color:#7a4a45!important}
         //   대상: 대기 예약 + 관리사가 '(대기)'로 적힌 매출(코스 2개 결제 후 교체 대기). 먼저 시작해야 하는 것부터.
         const daySeq = date => { const m = {}; salesData.filter(i => i.date === date && isSale(i)).sort((a, b) => a.id - b.id).forEach((it, n) => { m[it.id] = n + 1; }); return m; };
         const isPendSale = i => /대기/.test(i.therapist || '') && !therapists.includes(normName(i.therapist)) && careState(i) === 'doing';
+        // ver.59 팜팜: S코스는 한국 관리사, 그 밖의 코스는 태국 관리사 (국적 = 그날 인센표 '구분' → 관리사 국적 설정)
+        const natOfTh = (name, date) => (incenOv[icKey(date, name, 'row')] || {}).nation || therapistNation[name] || '태국';
+        const natOfCourse = c => STORE.id !== 'pp' || !c ? null : (/^\s*S/i.test(c) ? '한국' : '태국');
         function planAssign(day, staff, date) {
             const nowT = Date.now(), out = {};
             const staffAtt = staff.filter(x => x.att);
@@ -2489,34 +2492,44 @@ html[data-theme="dark"] [style*="#f0c36d"]{border-color:#7a4a45!important}
             const toBack = p => { queue = queue.filter(x => x !== p).concat(p); };
             const sales = salesData.filter(i => i.date === date && isSale(i)), seq = daySeq(date);
             const jobs = [];
-            day.filter(r => r.status === 'wait').forEach(r => { const e = r.eta ? careDT(r.date, r.eta) : null; jobs.push({ key: r.id, at: Math.max(nowT, e ? e.getTime() : nowT), mins: resMinutes(r.course), need: r.people || 1, nom: r.nom || '', ex: [], ord: r.no || 0 }); });
+            day.filter(r => r.status === 'wait').forEach(r => {
+                const e = r.eta ? careDT(r.date, r.eta) : null, at = Math.max(nowT, e ? e.getTime() : nowT);
+                const parts = STORE.id === 'pp' && peopleOf(r.course) > 1 ? partsOf(r.course).filter(p => p.name) : [];
+                if (parts.length > 1) {   // 세부 코스(예: 스페셜 = S40 → T60): 한 사람씩 차례로
+                    let t = at;
+                    const nomIdx = r.nom ? Math.max(0, parts.findIndex(p => natOfCourse(p.name) === natOfTh(r.nom, date))) : -1;
+                    parts.forEach((p, k) => { const mins = courseMinutes(p.name) || 60; jobs.push({ key: r.id, at: t, mins, need: r.people || 1, nom: k === nomIdx ? r.nom : '', ex: [], ord: (r.no || 0) + k / 10, nat: natOfCourse(p.name), label: p.name }); t += mins * 60000; });
+                } else jobs.push({ key: r.id, at, mins: resMinutes(r.course), need: r.people || 1, nom: r.nom || '', ex: [], ord: r.no || 0, nat: natOfCourse(r.course), label: '' });
+            });
             sales.filter(isPendSale).forEach(i => {
                 const st = careDT(i.date, i.startTime), en = careDT(i.date, i.endTime);
                 const m = String(i.note || '').match(/(\d+)\s*번/), prev = m ? sales.find(x => seq[x.id] == m[1]) : null;
                 const mins = st && en ? Math.max(10, Math.round((en - st) / 60000)) : resMinutes(i.course);
-                jobs.push({ key: 's' + i.id, at: Math.max(nowT, st ? st.getTime() : nowT), mins, need: 1, nom: '', ex: prev ? [normName(prev.therapist)] : [], ord: -1 });
+                jobs.push({ key: 's' + i.id, at: Math.max(nowT, st ? st.getTime() : nowT), mins, need: 1, nom: '', ex: prev ? [normName(prev.therapist)] : [], ord: -1, nat: natOfCourse(i.course), label: '' });
             });
             jobs.sort((a, b) => (a.at - b.at) || (a.ord - b.ord));
             const take = (j, p, nom) => {
-                if (p.free === Infinity) { toBack(p); return { name: p.name, nom, unknown: true }; }
+                if (p.free === Infinity) { toBack(p); return { name: p.name, nom, unknown: true, label: j.label }; }
                 const start = Math.max(j.at, p.free); p.free = start + j.mins * 60000; toBack(p);
-                return { name: p.name, nom, wait: Math.max(0, Math.round((start - j.at) / 60000)), start };
+                return { name: p.name, nom, wait: Math.max(0, Math.round((start - j.at) / 60000)), start, label: j.label };
             };
             jobs.forEach(j => {
-                const got = out[j.key] = [];
-                if (j.nom) { const p = queue.find(x => x.name === j.nom); got.push(p ? take(j, p, true) : { name: j.nom, nom: true, off: true }); }
+                const got = [];
+                if (j.nom) { const p = queue.find(x => x.name === j.nom); got.push(p ? take(j, p, true) : { name: j.nom, nom: true, off: true, label: j.label }); }
                 while (got.length < j.need) {
                     const used = got.map(x => x.name).concat(j.ex);
+                    const ok = x => !used.includes(x.name) && (!j.nat || natOfTh(x.name, date) === j.nat);
                     // ver.58 도착 시각에 비어 있는 관리사가 있으면 그중 순번대로, 아무도 없으면 순번대로(대기 시간 표시)
-                    const p = queue.find(x => !used.includes(x.name) && x.free <= j.at) || queue.find(x => !used.includes(x.name));
-                    if (!p) { got.push({ none: true }); break; }
+                    const p = queue.find(x => ok(x) && x.free <= j.at) || queue.find(ok);
+                    if (!p) { got.push({ none: true, nat: j.nat, label: j.label }); break; }
                     got.push(take(j, p, false));
                 }
+                out[j.key] = (out[j.key] || []).concat(got);
             });
             return out;
         }
-        const assignTag = x => x.none ? '<span class="rv-tag rv-as rv-as-no">가능 관리사 없음</span>'
-            : `<span class="rv-tag rv-as${x.nom ? ' rv-as-nom' : ''}${x.wait > 0 || x.off || x.unknown ? ' rv-as-wait' : ''}">${x.nom ? '지명 ' : ''}${x.off ? esc(x.name) + ' (미출근)' : x.unknown ? esc(x.name) + ' (종료시간 미입력)' : (x.wait > 0 ? x.wait + '분 후 가능 ' : '') + esc(x.name)}</span>`;
+        const assignTag = x => x.none ? `<span class="rv-tag rv-as rv-as-no">${x.label ? esc(x.label) + ' ' : ''}가능 ${x.nat ? x.nat + ' ' : ''}관리사 없음</span>`
+            : `<span class="rv-tag rv-as${x.nom ? ' rv-as-nom' : ''}${x.wait > 0 || x.off || x.unknown ? ' rv-as-wait' : ''}">${x.label ? esc(x.label) + ' ' : ''}${x.nom ? '지명 ' : ''}${x.off ? esc(x.name) + ' (미출근)' : x.unknown ? esc(x.name) + ' (종료시간 미입력)' : (x.wait > 0 ? x.wait + '분 후 가능 ' : '') + esc(x.name)}</span>`;
         function renderReservations() {
             const listEl = document.getElementById('resList'); if (!listEl) return;
             const date = document.getElementById('date').value, isToday = date === getBusinessDate();
@@ -2548,6 +2561,7 @@ html[data-theme="dark"] [style*="#f0c36d"]{border-color:#7a4a45!important}
                     const w = Math.max(...plan[r.id].map(x => x.wait || 0));
                     est = w <= 0 ? { ok: true, msg: '도착 시 바로 가능' } : { wait: w, msg: `약 ${w}분 대기 예상` };
                 }
+                else if (est && plan[r.id] && plan[r.id].some(x => x.none)) { const x = plan[r.id].find(y => y.none); est = { msg: `지금 출근한 ${x.nat ? x.nat + ' ' : ''}관리사 중 가능한 사람이 없습니다` }; }
                 const price = priceFor(r.course, r.route, r.payMethod);
                 const links = (r.saleIds || []).map(id => seq[id]).filter(Boolean);
                 const btn = (label, fn, bg) => `<button type="button" onclick="${fn}"${bg ? ` style="background:${bg}"` : ''}>${label}</button>`;
