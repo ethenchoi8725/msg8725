@@ -1,5 +1,5 @@
 // 매출장부 서비스워커 — 항상 최신 파일을 먼저 받아오고(네트워크 우선), 인터넷이 끊겼을 때만 저장본을 보여줌
-const CACHE = 'msg8725-v56';
+const CACHE = 'msg8725-v58';
 const CORE = ['./', './index.html', './manifest.webmanifest', './manifest-pp.webmanifest',
   './icon-192.png', './icon-512.png', './apple-touch-icon.png', './icon-pp-192.png', './icon-pp-512.png', './apple-touch-icon-pp.png'];
 

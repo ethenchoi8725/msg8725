@@ -835,7 +835,7 @@ html[data-theme="dark"] [style*="#f0c36d"]{border-color:#7a4a45!important}
 <body>
     <div class="container">
         <div class="header">
-            <h1><span id="storeEmoji">💆‍♀</span> <span id="storeName">도담</span> 매출장부 <small class="ver-tag">ver.56</small></h1>
+            <h1><span id="storeEmoji">💆‍♀</span> <span id="storeName">도담</span> 매출장부 <small class="ver-tag">ver.58</small></h1>
             <script>document.getElementById('storeName').textContent = STORE.name; if (STORE.id === 'pp') document.getElementById('storeEmoji').textContent = '💆‍♂️';</script>
             <div class="header-btns">
                 <button class="btn-refresh m-sec" onclick="location.reload()" style="width: auto;"><span class="hb-ic">🔄 </span>새로고침</button>
@@ -2469,14 +2469,23 @@ html[data-theme="dark"] [style*="#f0c36d"]{border-color:#7a4a45!important}
             if (!m) { try { m = partsOf(c).reduce((t, p) => t + courseMinutes(p.name), 0); } catch (e) { m = 0; } }
             return m || 60;
         }
-        // ver.56 순번(돌림) 배정: 지금 쉬는 관리사(순번대로) → 관리중 관리사(순번대로), 배정되면 순번 맨 뒤로
+        // ver.56~57 순번(돌림) 배정: 마지막 시작이 이른 관리사부터, 배정되면 순번 맨 뒤로 · 도착(시작) 시각이 빠른 일부터
         //   대상: 대기 예약 + 관리사가 '(대기)'로 적힌 매출(코스 2개 결제 후 교체 대기). 먼저 시작해야 하는 것부터.
         const daySeq = date => { const m = {}; salesData.filter(i => i.date === date && isSale(i)).sort((a, b) => a.id - b.id).forEach((it, n) => { m[it.id] = n + 1; }); return m; };
         const isPendSale = i => /대기/.test(i.therapist || '') && !therapists.includes(normName(i.therapist)) && careState(i) === 'doing';
         function planAssign(day, staff, date) {
             const nowT = Date.now(), out = {};
             const staffAtt = staff.filter(x => x.att);
-            let queue = [...staffAtt.filter(x => x.free <= nowT), ...staffAtt.filter(x => x.free > nowT)].map(x => ({ name: x.name, free: x.free }));
+            // ver.57 순번 = 오늘 마지막으로 관리를 '시작'한 시각이 이른 사람부터 (오늘 아직 안 들어간 사람은 맨 앞, 관리사 순번대로)
+            const lastStart = {};
+            salesData.filter(i => i.date === date && isSale(i)).flatMap(saleUnits).forEach(i => {
+                const nm = normName(i.therapist); if (!therapists.includes(nm)) return;
+                const st = careDT(i.date, i.startTime), en = careDT(i.date, i.endTime);
+                const t = st ? st.getTime() : en ? en.getTime() - resMinutes(i.course) * 60000 : Number(i.id) || 0;   // 시작시간이 없으면 종료시간·등록시각으로
+                lastStart[nm] = Math.max(lastStart[nm] ?? -Infinity, t);
+            });
+            let queue = staffAtt.map((x, k) => ({ name: x.name, free: x.free, ls: lastStart[x.name] ?? -Infinity, k }))
+                .sort((a, b) => (a.ls - b.ls) || (a.k - b.k));
             const toBack = p => { queue = queue.filter(x => x !== p).concat(p); };
             const sales = salesData.filter(i => i.date === date && isSale(i)), seq = daySeq(date);
             const jobs = [];
@@ -2498,7 +2507,8 @@ html[data-theme="dark"] [style*="#f0c36d"]{border-color:#7a4a45!important}
                 if (j.nom) { const p = queue.find(x => x.name === j.nom); got.push(p ? take(j, p, true) : { name: j.nom, nom: true, off: true }); }
                 while (got.length < j.need) {
                     const used = got.map(x => x.name).concat(j.ex);
-                    const p = queue.find(x => !used.includes(x.name));
+                    // ver.58 도착 시각에 비어 있는 관리사가 있으면 그중 순번대로, 아무도 없으면 순번대로(대기 시간 표시)
+                    const p = queue.find(x => !used.includes(x.name) && x.free <= j.at) || queue.find(x => !used.includes(x.name));
                     if (!p) { got.push({ none: true }); break; }
                     got.push(take(j, p, false));
                 }
