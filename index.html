@@ -835,7 +835,7 @@ html[data-theme="dark"] [style*="#f0c36d"]{border-color:#7a4a45!important}
 <body>
     <div class="container">
         <div class="header">
-            <h1><span id="storeEmoji">💆‍♀</span> <span id="storeName">도담</span> 매출장부 <small class="ver-tag">ver.53</small></h1>
+            <h1><span id="storeEmoji">💆‍♀</span> <span id="storeName">도담</span> 매출장부 <small class="ver-tag">ver.56</small></h1>
             <script>document.getElementById('storeName').textContent = STORE.name; if (STORE.id === 'pp') document.getElementById('storeEmoji').textContent = '💆‍♂️';</script>
             <div class="header-btns">
                 <button class="btn-refresh m-sec" onclick="location.reload()" style="width: auto;"><span class="hb-ic">🔄 </span>새로고침</button>
@@ -2469,29 +2469,38 @@ html[data-theme="dark"] [style*="#f0c36d"]{border-color:#7a4a45!important}
             if (!m) { try { m = partsOf(c).reduce((t, p) => t + courseMinutes(p.name), 0); } catch (e) { m = 0; } }
             return m || 60;
         }
-        function planAssign(day, staff) {
+        // ver.56 순번(돌림) 배정: 지금 쉬는 관리사(순번대로) → 관리중 관리사(순번대로), 배정되면 순번 맨 뒤로
+        //   대상: 대기 예약 + 관리사가 '(대기)'로 적힌 매출(코스 2개 결제 후 교체 대기). 먼저 시작해야 하는 것부터.
+        const daySeq = date => { const m = {}; salesData.filter(i => i.date === date && isSale(i)).sort((a, b) => a.id - b.id).forEach((it, n) => { m[it.id] = n + 1; }); return m; };
+        const isPendSale = i => /대기/.test(i.therapist || '') && !therapists.includes(normName(i.therapist)) && careState(i) === 'doing';
+        function planAssign(day, staff, date) {
             const nowT = Date.now(), out = {};
-            const pool = staff.filter(x => x.att).map(x => ({ name: x.name, free: x.free }));
-            const waits = day.filter(r => r.status === 'wait').sort((a, b) => (tk(a.eta) - tk(b.eta)) || a.no - b.no);
-            const arr = r => { const e = r.eta ? careDT(r.date, r.eta) : null; return Math.max(nowT, e ? e.getTime() : nowT); };
-            const take = (r, p, nom) => {
-                const a = arr(r); if (p.free === Infinity) return { name: p.name, nom, unknown: true };
-                const start = Math.max(a, p.free); p.free = start + resMinutes(r.course) * 60000;
-                return { name: p.name, nom, wait: Math.max(0, Math.round((start - a) / 60000)) };
-            };
-            waits.filter(r => r.nom).forEach(r => {   // 1) 지명 예약 먼저
-                const p = pool.find(x => x.name === r.nom);
-                out[r.id] = [p ? take(r, p, true) : { name: r.nom, nom: true, off: true }];
+            const staffAtt = staff.filter(x => x.att);
+            let queue = [...staffAtt.filter(x => x.free <= nowT), ...staffAtt.filter(x => x.free > nowT)].map(x => ({ name: x.name, free: x.free }));
+            const toBack = p => { queue = queue.filter(x => x !== p).concat(p); };
+            const sales = salesData.filter(i => i.date === date && isSale(i)), seq = daySeq(date);
+            const jobs = [];
+            day.filter(r => r.status === 'wait').forEach(r => { const e = r.eta ? careDT(r.date, r.eta) : null; jobs.push({ key: r.id, at: Math.max(nowT, e ? e.getTime() : nowT), mins: resMinutes(r.course), need: r.people || 1, nom: r.nom || '', ex: [], ord: r.no || 0 }); });
+            sales.filter(isPendSale).forEach(i => {
+                const st = careDT(i.date, i.startTime), en = careDT(i.date, i.endTime);
+                const m = String(i.note || '').match(/(\d+)\s*번/), prev = m ? sales.find(x => seq[x.id] == m[1]) : null;
+                const mins = st && en ? Math.max(10, Math.round((en - st) / 60000)) : resMinutes(i.course);
+                jobs.push({ key: 's' + i.id, at: Math.max(nowT, st ? st.getTime() : nowT), mins, need: 1, nom: '', ex: prev ? [normName(prev.therapist)] : [], ord: -1 });
             });
-            waits.forEach(r => {   // 2) 나머지 인원은 관리사 순번대로
-                const got = out[r.id] || (out[r.id] = []);
-                let need = (r.people || 1) - got.length;
-                while (need-- > 0) {
-                    const used = got.map(x => x.name), a = arr(r);
-                    const cand = pool.filter(x => !used.includes(x.name));
-                    if (!cand.length) { got.push({ none: true }); continue; }
-                    const p = cand.find(x => x.free <= a) || cand.filter(x => x.free !== Infinity).sort((x, y) => x.free - y.free)[0] || cand[0];
-                    got.push(take(r, p, false));
+            jobs.sort((a, b) => (a.at - b.at) || (a.ord - b.ord));
+            const take = (j, p, nom) => {
+                if (p.free === Infinity) { toBack(p); return { name: p.name, nom, unknown: true }; }
+                const start = Math.max(j.at, p.free); p.free = start + j.mins * 60000; toBack(p);
+                return { name: p.name, nom, wait: Math.max(0, Math.round((start - j.at) / 60000)), start };
+            };
+            jobs.forEach(j => {
+                const got = out[j.key] = [];
+                if (j.nom) { const p = queue.find(x => x.name === j.nom); got.push(p ? take(j, p, true) : { name: j.nom, nom: true, off: true }); }
+                while (got.length < j.need) {
+                    const used = got.map(x => x.name).concat(j.ex);
+                    const p = queue.find(x => !used.includes(x.name));
+                    if (!p) { got.push({ none: true }); break; }
+                    got.push(take(j, p, false));
                 }
             });
             return out;
@@ -2502,6 +2511,7 @@ html[data-theme="dark"] [style*="#f0c36d"]{border-color:#7a4a45!important}
             const listEl = document.getElementById('resList'); if (!listEl) return;
             const date = document.getElementById('date').value, isToday = date === getBusinessDate();
             const day = reservations.filter(r => r.date === date), staff = staffInfo(date);
+            const plan = isToday ? planAssign(day, staff, date) : {};
             const sales = salesData.filter(i => i.date === date && isSale(i)), seq = {}; [...sales].sort((a, b) => a.id - b.id).forEach((i, n) => { seq[i.id] = n + 1; });
             const nWait = day.filter(r => r.status === 'wait').length, nDone = day.filter(r => r.status === 'done').length, nOut = day.filter(r => r.status === 'cancel' || r.status === 'noshow' || r.status === 'black' || r.status === 'miss').length, nWalk = sales.filter(i => i.walkin).length;
             const nLate = isToday ? day.filter(r => r.status === 'wait' && r.eta && careDT(r.date, r.eta) && Date.now() > careDT(r.date, r.eta).getTime()).length : 0;
@@ -2514,9 +2524,9 @@ html[data-theme="dark"] [style*="#f0c36d"]{border-color:#7a4a45!important}
                 const freeN = staff.filter(x => x.att && !x.busy).length, nexts = staff.filter(x => x.att && x.busy && x.free !== Infinity).map(x => x.free).sort((a, b) => a - b);
                 const nx = nexts.length ? new Date(nexts[0]) : null, mn = nx ? Math.max(0, Math.round((nx.getTime() - Date.now()) / 60000)) : 0;
                 bar.innerHTML = `<b>관리사</b> ` + staff.map(x => `<span class="rv-chip ${!x.att ? 'off' : x.busy ? 'busy' : 'ok'}" data-nm="${esc(x.name)}" onclick="toggleAtt('${esc(x.name).replace(/'/g, "\\'")}')" title="누르면 출근/미출근 전환 · 끌어서 순번 변경">${esc(x.name)}${therapistAlba[x.name] ? '<span class="alba-tag">알바</span>' : ''} ${!x.att ? '미출근' : x.busy ? (x.unknown ? '관리중' : '관리중 ~' + fmtT(x.endHM)) : '가능'}</span>`).join('')
-                    + ` <span style="margin-left:6px"><b>지금 가능 ${freeN}명</b>${freeN === 0 && nx ? ` · 다음 가능 ${fmtT(hmOf(nx.getHours() * 60 + nx.getMinutes()))} (${mn}분 후)` : ''}</span>`;
+                    + ` <span style="margin-left:6px"><b>지금 가능 ${freeN}명</b>${freeN === 0 && nx ? ` · 다음 가능 ${fmtT(hmOf(nx.getHours() * 60 + nx.getMinutes()))} (${mn}분 후)` : ''}</span>`
+                    + salesData.filter(i => i.date === date && isSale(i) && isPendSale(i)).map(i => { const a = (plan['s' + i.id] || [])[0]; const no = daySeq(date)[i.id] || ''; return a ? ` <span class="rv-tag rv-as${a.wait > 0 || a.none || a.unknown ? ' rv-as-wait' : ''}" title="관리사 교체 대기 매출">${no ? no + '번 ' : ''}${esc(i.therapist)} ${fmtT(i.startTime)} → ${a.none ? '가능 관리사 없음' : (a.wait > 0 ? a.wait + '분 후 ' : '') + esc(a.name)}</span>` : ''; }).join('');
             }
-            const plan = isToday ? planAssign(day, staff) : {};
             const order = { wait: 0, done: 1, cancel: 2, noshow: 2, black: 2, miss: 2 };
             const sorted = [...day].sort((a, b) => (order[a.status] - order[b.status]) || (a.status === 'wait' ? (tk(a.eta) - tk(b.eta)) : 0) || a.no - b.no);
             const isFin = r => r.status === 'done' && (r.saleIds || []).length >= (r.people || 1);   // 매출 연동 완료 → 완료 목록으로
@@ -3688,6 +3698,7 @@ html[data-theme="dark"] [style*="#f0c36d"]{border-color:#7a4a45!important}
             const it = salesData.find(x => x.id === id); if (!it) return;
             it.status = careState(it) === 'done' ? 'doing' : 'done';
             syncToFirebase(); document.querySelectorAll(`[data-care="${id}"]`).forEach(el => el.outerHTML = careBadge(it));
+            renderReservations();   // ver.54 완료/관리중 바꾸면 예약장부 관리사 현황·배정 바로 반영
         };
         setInterval(() => document.querySelectorAll('[data-care]').forEach(el => {
             const it = salesData.find(x => x.id === Number(el.dataset.care)); if (!it) return;
