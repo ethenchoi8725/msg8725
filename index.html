@@ -835,7 +835,7 @@ html[data-theme="dark"] [style*="#f0c36d"]{border-color:#7a4a45!important}
 <body>
     <div class="container">
         <div class="header">
-            <h1><span id="storeEmoji">💆‍♀</span> <span id="storeName">도담</span> 매출장부 <small class="ver-tag">ver.61</small></h1>
+            <h1><span id="storeEmoji">💆‍♀</span> <span id="storeName">도담</span> 매출장부 <small class="ver-tag">ver.62</small></h1>
             <script>document.getElementById('storeName').textContent = STORE.name; if (STORE.id === 'pp') document.getElementById('storeEmoji').textContent = '💆‍♂️';</script>
             <div class="header-btns">
                 <button class="btn-refresh m-sec" onclick="location.reload()" style="width: auto;"><span class="hb-ic">🔄 </span>새로고침</button>
@@ -1971,11 +1971,11 @@ html[data-theme="dark"] [style*="#f0c36d"]{border-color:#7a4a45!important}
         // 예약방법 종류: 마통·하이타이·마맵은 어플, 그 외는 일반 (관리자에서 변경)
         const BOOK_APP_DEFAULT = ['마통', '하이타이', '마맵'];
         function bookTypeOf(b) { if (!b) return '일반'; return bookTypes[b] || (BOOK_APP_DEFAULT.includes(b) ? '어플' : '일반'); }
-        // 금액: 예약방법이 어플이면 어플 금액, 아니면 카드 결제는 카드 금액·그 외는 현금(계좌) 금액
+        // 금액 (ver.62): 결제가 카드면 카드 금액(어플 예약이어도) → 어플 예약이면 어플 금액 → 그 외는 현금(계좌) 금액
         function priceFor(course, booking, method) {
             const p = coursePrice[course]; if (!p) return 0;
             const cash = Number(p.cash) || 0, app = Number(p.app) || 0, card = Number(p.card) || 0;
-            const v = bookTypeOf(booking) === '어플' ? (app || cash) : payTypeOf(method) === '카드' ? (card || cash) : cash;
+            const v = payTypeOf(method) === '카드' ? (card || cash) : bookTypeOf(booking) === '어플' ? (app || cash) : cash;
             return v || cash || app || card;   // 해당 금액칸이 비어 있으면 입력된 다른 금액으로 대신 채움
         }
         let priceAuto = true;   // 금액을 사용자가 직접 고치면 false → 자동 덮어쓰기 중단
